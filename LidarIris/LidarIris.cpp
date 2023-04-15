@@ -1,5 +1,10 @@
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
 #include "LidarIris.h"
 #include "fftm/fftm.hpp"
+
+namespace py = pybind11;
 
 cv::Mat1b LidarIris::GetIris(const pcl::PointCloud<pcl::PointXYZ> &cloud)
 {
@@ -180,14 +185,14 @@ LidarIris::FeatureDesc LidarIris::GetFeature(const cv::Mat1b &src)
     return desc;
 }
 
-LidarIris::FeatureDesc LidarIris::GetFeature(const cv::Mat1b &src, std::vector<float> &vec)
-{
-    cv::Mat1f temp;
-    src.convertTo(temp, CV_32FC1);
-    cv::reduce((temp != 0) / 255, temp, 1, CV_REDUCE_AVG);
-    vec = temp.isContinuous() ? temp : temp.clone();
-    return GetFeature(src);
-}
+// LidarIris::FeatureDesc LidarIris::GetFeature(const cv::Mat1b &src, std::vector<float> &vec)
+// {
+//     cv::Mat1f temp;
+//     src.convertTo(temp, CV_32FC1);
+//     cv::reduce((temp != 0) / 255, temp, 1, cv::REDUCE_AVG);
+//     vec = temp.isContinuous() ? temp : temp.clone();
+//     return GetFeature(src);
+// }
 
 void LidarIris::GetHammingDistance(const cv::Mat1b &T1, const cv::Mat1b &M1, const cv::Mat1b &T2, const cv::Mat1b &M2, int scale, float &dis, int &bias)
 {
@@ -210,7 +215,7 @@ void LidarIris::GetHammingDistance(const cv::Mat1b &T1, const cv::Mat1b &M1, con
         else
         {
             float currentDis = bitsDiff / (float)totalBits;
-            if (currentDis < dis || isnan(dis))
+            if (currentDis < dis || std::isnan(dis))
             {
                 dis = currentDis;
                 bias = shift;
@@ -227,8 +232,12 @@ inline cv::Mat LidarIris::circRowShift(const cv::Mat &src, int shift_m_rows)
     shift_m_rows %= src.rows;
     int m = shift_m_rows > 0 ? shift_m_rows : src.rows + shift_m_rows;
     cv::Mat dst(src.size(), src.type());
-    src(cv::Range(src.rows - m, src.rows), cv::Range::all()).copyTo(dst(cv::Range(0, m), cv::Range::all()));
-    src(cv::Range(0, src.rows - m), cv::Range::all()).copyTo(dst(cv::Range(m, src.rows), cv::Range::all()));
+    if(m!=0){
+        src(cv::Range(src.rows - m, src.rows), cv::Range::all()).copyTo(dst(cv::Range(0, m), cv::Range::all()));
+    }
+    if(m!=src.rows){
+        src(cv::Range(0, src.rows - m), cv::Range::all()).copyTo(dst(cv::Range(m, src.rows), cv::Range::all()));
+    }
     return dst;
 }
 
@@ -239,12 +248,36 @@ inline cv::Mat LidarIris::circColShift(const cv::Mat &src, int shift_n_cols)
     shift_n_cols %= src.cols;
     int n = shift_n_cols > 0 ? shift_n_cols : src.cols + shift_n_cols;
     cv::Mat dst(src.size(), src.type());
-    src(cv::Range::all(), cv::Range(src.cols - n, src.cols)).copyTo(dst(cv::Range::all(), cv::Range(0, n)));
-    src(cv::Range::all(), cv::Range(0, src.cols - n)).copyTo(dst(cv::Range::all(), cv::Range(n, src.cols)));
+    if(n!=0){
+        src(cv::Range::all(), cv::Range(src.cols - n, src.cols)).copyTo(dst(cv::Range::all(), cv::Range(0, n)));
+    }
+    if(n!=src.cols){
+        src(cv::Range::all(), cv::Range(0, src.cols - n)).copyTo(dst(cv::Range::all(), cv::Range(n, src.cols)));
+    }
     return dst;
 }
 
 cv::Mat LidarIris::circShift(const cv::Mat &src, int shift_m_rows, int shift_n_cols)
 {
     return circColShift(circRowShift(src, shift_m_rows), shift_n_cols);
+}
+
+// using GetIris = LidarIris::GetIris;
+
+PYBIND11_MODULE(LidarIris, m)
+{
+    py::class_<LidarIris>(m, "LidarIris")
+        .def(py::init<int, int, int, double, double>(), py::arg("nscale") = 4, py::arg("minWaveLength") = 18, py::arg("mult") = 1.6, py::arg("sigmaOnf") = 0.75, py::arg("k") = 50)
+        .def("GetIris", &LidarIris::GetIris, py::arg("cloud"), "get iris from point cloud")
+        // .def("GetFeature", &LidarIris::GetFeature, py::arg("src"), "get feature from iris")
+        .def("Compare", &LidarIris::Compare, py::arg("img1"), py::arg("img2"))
+        .def("circShift", &LidarIris::circShift, py::arg("src"), py::arg("shift_m_rows"), py::arg("shift_n_cols"))
+        // .def("GetFeature", &LidarIris::GetFeature, py::arg("src"), py::arg("vec"))
+        .def("GetHammingDistance", &LidarIris::GetHammingDistance, py::arg("T1"), py::arg("M1"), py::arg("Tc2"), py::arg("M2"), py::arg("scale"), py::arg("dis"), py::arg("bias"));
+        // .def("GetIris", &LidarIris::GetIris)
+        // .def("GetFeature", &LidarIris::GetFeature)
+        // .def("Compare", &LidarIris::Compare)
+        // .def("circShift", &LidarIris::circShift)
+        // // .def("GetFeature", &LidarIris::GetFeature, py::arg("src"), py::arg("vec"))
+        // .def("GetHammingDistance", &LidarIris::GetHammingDistance);        
 }

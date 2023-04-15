@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC   -O3 -DNDEBUG -flto   -shared  -o lidar_iris.cpython-37m-x86_64-linux-gnu.so CMakeFiles/lidar_iris.dir/LidarIris/LidarIris.cpp.o  /usr/lib/x86_64-linux-gnu/libpython3.8.so 
