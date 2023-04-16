@@ -111,17 +111,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named demo
+# Target rules for targets named lidar_iris
 
 # Build rule for target.
-demo: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 demo
-.PHONY : demo
+lidar_iris: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 lidar_iris
+.PHONY : lidar_iris
 
 # fast build rule for target.
-demo/fast:
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/build
-.PHONY : demo/fast
+lidar_iris/fast:
+	$(MAKE) -f CMakeFiles/lidar_iris.dir/build.make CMakeFiles/lidar_iris.dir/build
+.PHONY : lidar_iris/fast
 
 #=============================================================================
 # Target rules for targets named LidarIris
@@ -136,28 +136,14 @@ LidarIris/fast:
 	$(MAKE) -f CMakeFiles/LidarIris.dir/build.make CMakeFiles/LidarIris.dir/build
 .PHONY : LidarIris/fast
 
-#=============================================================================
-# Target rules for targets named lidar_iris
-
-# Build rule for target.
-lidar_iris: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 lidar_iris
-.PHONY : lidar_iris
-
-# fast build rule for target.
-lidar_iris/fast:
-	$(MAKE) -f CMakeFiles/lidar_iris.dir/build.make CMakeFiles/lidar_iris.dir/build
-.PHONY : lidar_iris/fast
-
 LidarIris/LidarIris.o: LidarIris/LidarIris.cpp.o
 
 .PHONY : LidarIris/LidarIris.o
 
 # target to build an object file
 LidarIris/LidarIris.cpp.o:
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/LidarIris/LidarIris.cpp.o
-	$(MAKE) -f CMakeFiles/LidarIris.dir/build.make CMakeFiles/LidarIris.dir/LidarIris/LidarIris.cpp.o
 	$(MAKE) -f CMakeFiles/lidar_iris.dir/build.make CMakeFiles/lidar_iris.dir/LidarIris/LidarIris.cpp.o
+	$(MAKE) -f CMakeFiles/LidarIris.dir/build.make CMakeFiles/LidarIris.dir/LidarIris/LidarIris.cpp.o
 .PHONY : LidarIris/LidarIris.cpp.o
 
 LidarIris/LidarIris.i: LidarIris/LidarIris.cpp.i
@@ -166,9 +152,8 @@ LidarIris/LidarIris.i: LidarIris/LidarIris.cpp.i
 
 # target to preprocess a source file
 LidarIris/LidarIris.cpp.i:
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/LidarIris/LidarIris.cpp.i
-	$(MAKE) -f CMakeFiles/LidarIris.dir/build.make CMakeFiles/LidarIris.dir/LidarIris/LidarIris.cpp.i
 	$(MAKE) -f CMakeFiles/lidar_iris.dir/build.make CMakeFiles/lidar_iris.dir/LidarIris/LidarIris.cpp.i
+	$(MAKE) -f CMakeFiles/LidarIris.dir/build.make CMakeFiles/LidarIris.dir/LidarIris/LidarIris.cpp.i
 .PHONY : LidarIris/LidarIris.cpp.i
 
 LidarIris/LidarIris.s: LidarIris/LidarIris.cpp.s
@@ -177,9 +162,8 @@ LidarIris/LidarIris.s: LidarIris/LidarIris.cpp.s
 
 # target to generate assembly for a file
 LidarIris/LidarIris.cpp.s:
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/LidarIris/LidarIris.cpp.s
-	$(MAKE) -f CMakeFiles/LidarIris.dir/build.make CMakeFiles/LidarIris.dir/LidarIris/LidarIris.cpp.s
 	$(MAKE) -f CMakeFiles/lidar_iris.dir/build.make CMakeFiles/lidar_iris.dir/LidarIris/LidarIris.cpp.s
+	$(MAKE) -f CMakeFiles/LidarIris.dir/build.make CMakeFiles/LidarIris.dir/LidarIris/LidarIris.cpp.s
 .PHONY : LidarIris/LidarIris.cpp.s
 
 LidarIris/fftm/fftm.o: LidarIris/fftm/fftm.cpp.o
@@ -188,7 +172,6 @@ LidarIris/fftm/fftm.o: LidarIris/fftm/fftm.cpp.o
 
 # target to build an object file
 LidarIris/fftm/fftm.cpp.o:
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/LidarIris/fftm/fftm.cpp.o
 	$(MAKE) -f CMakeFiles/LidarIris.dir/build.make CMakeFiles/LidarIris.dir/LidarIris/fftm/fftm.cpp.o
 .PHONY : LidarIris/fftm/fftm.cpp.o
 
@@ -198,7 +181,6 @@ LidarIris/fftm/fftm.i: LidarIris/fftm/fftm.cpp.i
 
 # target to preprocess a source file
 LidarIris/fftm/fftm.cpp.i:
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/LidarIris/fftm/fftm.cpp.i
 	$(MAKE) -f CMakeFiles/LidarIris.dir/build.make CMakeFiles/LidarIris.dir/LidarIris/fftm/fftm.cpp.i
 .PHONY : LidarIris/fftm/fftm.cpp.i
 
@@ -208,36 +190,8 @@ LidarIris/fftm/fftm.s: LidarIris/fftm/fftm.cpp.s
 
 # target to generate assembly for a file
 LidarIris/fftm/fftm.cpp.s:
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/LidarIris/fftm/fftm.cpp.s
 	$(MAKE) -f CMakeFiles/LidarIris.dir/build.make CMakeFiles/LidarIris.dir/LidarIris/fftm/fftm.cpp.s
 .PHONY : LidarIris/fftm/fftm.cpp.s
-
-demo.o: demo.cpp.o
-
-.PHONY : demo.o
-
-# target to build an object file
-demo.cpp.o:
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/demo.cpp.o
-.PHONY : demo.cpp.o
-
-demo.i: demo.cpp.i
-
-.PHONY : demo.i
-
-# target to preprocess a source file
-demo.cpp.i:
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/demo.cpp.i
-.PHONY : demo.cpp.i
-
-demo.s: demo.cpp.s
-
-.PHONY : demo.s
-
-# target to generate assembly for a file
-demo.cpp.s:
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/demo.cpp.s
-.PHONY : demo.cpp.s
 
 # Help Target
 help:
@@ -246,19 +200,15 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
-	@echo "... demo"
-	@echo "... LidarIris"
 	@echo "... rebuild_cache"
 	@echo "... lidar_iris"
+	@echo "... LidarIris"
 	@echo "... LidarIris/LidarIris.o"
 	@echo "... LidarIris/LidarIris.i"
 	@echo "... LidarIris/LidarIris.s"
 	@echo "... LidarIris/fftm/fftm.o"
 	@echo "... LidarIris/fftm/fftm.i"
 	@echo "... LidarIris/fftm/fftm.s"
-	@echo "... demo.o"
-	@echo "... demo.i"
-	@echo "... demo.s"
 .PHONY : help
 
 

@@ -53,70 +53,48 @@ CMAKE_BINARY_DIR = /home/lusha/github/lusha/LiDAR-Iris/build
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/demo.dir/all
-all: CMakeFiles/LidarIris.dir/all
 all: CMakeFiles/lidar_iris.dir/all
-all: pybind11/all
+all: CMakeFiles/LidarIris.dir/all
 
 .PHONY : all
 
 # The main recursive "preinstall" target.
-preinstall: pybind11/preinstall
+preinstall:
 
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/demo.dir/clean
-clean: CMakeFiles/LidarIris.dir/clean
 clean: CMakeFiles/lidar_iris.dir/clean
-clean: pybind11/clean
+clean: CMakeFiles/LidarIris.dir/clean
 
 .PHONY : clean
 
 #=============================================================================
-# Directory level rules for directory pybind11
-
-# Recursive "all" directory target.
-pybind11/all:
-
-.PHONY : pybind11/all
-
-# Recursive "preinstall" directory target.
-pybind11/preinstall:
-
-.PHONY : pybind11/preinstall
-
-# Recursive "clean" directory target.
-pybind11/clean:
-
-.PHONY : pybind11/clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/demo.dir
+# Target rules for target CMakeFiles/lidar_iris.dir
 
 # All Build rule for target.
-CMakeFiles/demo.dir/all:
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/depend
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lusha/github/lusha/LiDAR-Iris/build/CMakeFiles --progress-num=4,5,6,7 "Built target demo"
-.PHONY : CMakeFiles/demo.dir/all
+CMakeFiles/lidar_iris.dir/all:
+	$(MAKE) -f CMakeFiles/lidar_iris.dir/build.make CMakeFiles/lidar_iris.dir/depend
+	$(MAKE) -f CMakeFiles/lidar_iris.dir/build.make CMakeFiles/lidar_iris.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lusha/github/lusha/LiDAR-Iris/build/CMakeFiles --progress-num=4,5 "Built target lidar_iris"
+.PHONY : CMakeFiles/lidar_iris.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/demo.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/lusha/github/lusha/LiDAR-Iris/build/CMakeFiles 4
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/demo.dir/all
+CMakeFiles/lidar_iris.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/lusha/github/lusha/LiDAR-Iris/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/lidar_iris.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/lusha/github/lusha/LiDAR-Iris/build/CMakeFiles 0
-.PHONY : CMakeFiles/demo.dir/rule
+.PHONY : CMakeFiles/lidar_iris.dir/rule
 
 # Convenience name for target.
-demo: CMakeFiles/demo.dir/rule
+lidar_iris: CMakeFiles/lidar_iris.dir/rule
 
-.PHONY : demo
+.PHONY : lidar_iris
 
 # clean rule for target.
-CMakeFiles/demo.dir/clean:
-	$(MAKE) -f CMakeFiles/demo.dir/build.make CMakeFiles/demo.dir/clean
-.PHONY : CMakeFiles/demo.dir/clean
+CMakeFiles/lidar_iris.dir/clean:
+	$(MAKE) -f CMakeFiles/lidar_iris.dir/build.make CMakeFiles/lidar_iris.dir/clean
+.PHONY : CMakeFiles/lidar_iris.dir/clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/LidarIris.dir
@@ -144,33 +122,6 @@ LidarIris: CMakeFiles/LidarIris.dir/rule
 CMakeFiles/LidarIris.dir/clean:
 	$(MAKE) -f CMakeFiles/LidarIris.dir/build.make CMakeFiles/LidarIris.dir/clean
 .PHONY : CMakeFiles/LidarIris.dir/clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/lidar_iris.dir
-
-# All Build rule for target.
-CMakeFiles/lidar_iris.dir/all:
-	$(MAKE) -f CMakeFiles/lidar_iris.dir/build.make CMakeFiles/lidar_iris.dir/depend
-	$(MAKE) -f CMakeFiles/lidar_iris.dir/build.make CMakeFiles/lidar_iris.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lusha/github/lusha/LiDAR-Iris/build/CMakeFiles --progress-num=8,9 "Built target lidar_iris"
-.PHONY : CMakeFiles/lidar_iris.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/lidar_iris.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/lusha/github/lusha/LiDAR-Iris/build/CMakeFiles 2
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/lidar_iris.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/lusha/github/lusha/LiDAR-Iris/build/CMakeFiles 0
-.PHONY : CMakeFiles/lidar_iris.dir/rule
-
-# Convenience name for target.
-lidar_iris: CMakeFiles/lidar_iris.dir/rule
-
-.PHONY : lidar_iris
-
-# clean rule for target.
-CMakeFiles/lidar_iris.dir/clean:
-	$(MAKE) -f CMakeFiles/lidar_iris.dir/build.make CMakeFiles/lidar_iris.dir/clean
-.PHONY : CMakeFiles/lidar_iris.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

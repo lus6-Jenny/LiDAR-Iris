@@ -22,16 +22,15 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
+  "/home/lusha/miniconda3/envs/pytorch/include/python3.7m"
+  "/home/lusha/miniconda3/envs/pytorch/lib/python3.7/site-packages/pybind11/include"
   "/usr/include/vtk-7.1"
   "/usr/include/freetype2"
-  "/home/lusha/miniconda3/envs/pytorch/include/python3.7m"
-  "../pybind11/include"
   "/usr/include/pcl-1.10"
   "/usr/include/eigen3"
   "/usr/include/ni"
   "/usr/include/openni2"
   "/usr/include/opencv4"
-  ".././LidarIris"
   )
 
 # Targets to which this target links.
