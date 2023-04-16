@@ -5,7 +5,7 @@ import pybind11
 functions_module = Extension(
     name='LidarIris',
     sources=['LidarIris.cpp'],
-    include_dirs=['/usr/local/cuda-11.0/include'],
+    include_dirs=['./pybind11/include', './LiDAR-Iris/fftm'],
     library_dirs=['./LiDAR-Iris/build'],
     libraries=['lidar_iris'],
     language='c++',
