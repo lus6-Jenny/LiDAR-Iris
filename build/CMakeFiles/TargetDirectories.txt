@@ -1,4 +1,0 @@
-/home/lusha/github/lusha/LiDAR-Iris/build/CMakeFiles/edit_cache.dir
-/home/lusha/github/lusha/LiDAR-Iris/build/CMakeFiles/rebuild_cache.dir
-/home/lusha/github/lusha/LiDAR-Iris/build/CMakeFiles/lidar_iris.dir
-/home/lusha/github/lusha/LiDAR-Iris/build/CMakeFiles/LidarIris.dir
