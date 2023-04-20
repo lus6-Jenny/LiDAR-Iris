@@ -1,0 +1,5 @@
+Metadata-Version: 2.1
+Name: lidar-iris
+Version: 0.0.1
+Summary: A LiDAR-based place recognition algorithm
+License-File: LICENSE

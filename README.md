@@ -24,8 +24,8 @@ we tested on Ubuntu 18.04.
 cd ${YOUR_PROJECT_DIR}
 mdkir build
 cd build
-cmake ..
-make
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j8
 ```
 
 #### 3. Run
@@ -33,3 +33,15 @@ make
 ./demo ../data/64line_1.pcd ../data/64line_2.pcd
 ```
 ![](./img/out.png)
+
+
+#### 4. Set up
+```
+# set up to python site-packages
+python setup.py install
+```
+or
+```
+# set up to local
+python setup.py build_ext --inplace
+```
