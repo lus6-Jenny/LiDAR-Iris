@@ -33,6 +33,7 @@ public:
     LidarIris &operator=(const LidarIris &) = delete;
 
     static cv::Mat1b GetIris(const pcl::PointCloud<pcl::PointXYZ> &cloud);
+    // static cv::Mat1b GetIris(float* cloud_data, int cloud_size, int cloud_dim);
     //
     void UpdateFrame(const cv::Mat1b &frame, int frameIndex, float *matchDistance, int *matchIndex);
     //
@@ -46,6 +47,7 @@ public:
     static inline cv::Mat circRowShift(const cv::Mat &src, int shift_m_rows);
     static inline cv::Mat circColShift(const cv::Mat &src, int shift_n_cols);
     static cv::Mat circShift(const cv::Mat &src, int shift_m_rows, int shift_n_cols);
+    // void OneCoupleCompare(std::string cloudFileName1, std::string cloudFileName2);
 
 private:
     void LoGFeatureEncode(const cv::Mat1b &src, unsigned int nscale, int minWaveLength, double mult, double sigmaOnf, cv::Mat1b &T, cv::Mat1b &M);

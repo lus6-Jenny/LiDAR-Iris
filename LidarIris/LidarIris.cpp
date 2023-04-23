@@ -5,7 +5,90 @@
 #include "LidarIris.h"
 #include "fftm/fftm.hpp"
 
+#include <iostream>
+#include <vector>
+#include <string>
+#include <ctime>
+#include <pcl/io/pcd_io.h>
+
 namespace py = pybind11;
+
+pcl::PointCloud<pcl::PointXYZ>  array_to_pcl(py::array_t<float> array)
+{
+    // get the buffer info
+    py::buffer_info buf = array.request();
+
+    // get a pointer to the data as float
+    float *ptr = (float *) buf.ptr;
+
+    // create a new cloud
+    pcl::PointCloud<pcl::PointXYZ> cloud;
+    cloud.width = buf.shape[0];
+    cloud.height = 1;
+    cloud.points.resize(cloud.width * cloud.height);
+
+    // copy the data
+    for (size_t i = 0; i < cloud.size(); i++) {
+        cloud.points[i].x = ptr[i * 3 + 0];
+        cloud.points[i].y = ptr[i * 3 + 1];
+        cloud.points[i].z = ptr[i * 3 + 2];
+    }
+
+    return cloud;
+}
+
+cv::Mat numpy_array_to_cv_mat(py::array_t<uint8_t> &arr) {
+    py::buffer_info buf = arr.request();
+    int rows = buf.shape[0];
+    int cols = buf.shape[1];
+    int channels = buf.shape[2];
+    uint8_t *ptr = (uint8_t *) buf.ptr;
+    cv::Mat img(rows, cols, CV_MAKETYPE(CV_8U, channels));
+    int stride = buf.strides[0];
+    for (int i = 0; i < rows; i++, ptr += stride) {
+        memcpy(img.ptr(i), ptr, cols * channels);
+    }
+    return img;
+}
+
+cv::Mat numpy_uint8_1c_to_cv_mat(py::array_t<uint8_t> &input) {
+    py::buffer_info buf = input.request();
+    int rows = buf.shape[0];
+    int cols = buf.shape[1];
+    cv::Mat mat(rows, cols, CV_8UC1, buf.ptr);
+    return mat.clone();
+}
+
+py::array_t<uint8_t> cv_mat_to_numpy_array(const cv::Mat &img) {
+    int rows = img.rows;
+    int cols = img.cols;
+    int channels = img.channels();
+    py::array_t<uint8_t> arr({rows, cols, channels});
+    py::buffer_info buf = arr.request();
+    uint8_t *ptr = (uint8_t *) buf.ptr;
+    int stride = buf.strides[0];
+    for (int i = 0; i < rows; i++, ptr += stride) {
+        memcpy(ptr, img.ptr(i), cols * channels);
+    }
+    return arr;
+}
+
+// cv::Mat1b LidarIris::GetIris(float* cloud_data, int cloud_size, int cloud_dim)
+// {
+//     cv::Mat1b IrisMap = cv::Mat1b::zeros(80, 360);
+    
+//     // 64-line
+//     for (int i = 0; i < cloud_size; i++) {
+//         float dis = sqrt(cloud_data[i * cloud_dim + 0] * cloud_data[i * cloud_dim + 0] + cloud_data[i * cloud_dim + 1] * cloud_data[i * cloud_dim + 1]);
+//         float arc = (atan2(cloud_data[i * cloud_dim + 2], dis) * 180.0f / M_PI) + 24;
+//         float yaw = (atan2(cloud_data[i * cloud_dim + 1], cloud_data[i * cloud_dim + 0]) * 180.0f / M_PI) + 180;
+//         int Q_dis = std::min(std::max((int)floor(dis), 0), 79);
+//         int Q_arc = std::min(std::max((int)floor(arc / 4.0f), 0), 7);
+//         int Q_yaw = std::min(std::max((int)floor(yaw + 0.5), 0), 359);
+//         IrisMap.at<uint8_t>(Q_dis, Q_yaw) |= (1 << Q_arc);
+//     }
+//     return IrisMap;
+// }
 
 cv::Mat1b LidarIris::GetIris(const pcl::PointCloud<pcl::PointXYZ> &cloud)
 {
@@ -22,7 +105,6 @@ cv::Mat1b LidarIris::GetIris(const pcl::PointCloud<pcl::PointXYZ> &cloud)
     //     int Q_yaw = std::min(std::max((int)floor(yaw + 0.5), 0), 359);
     //     IrisMap.at<uint8_t>(Q_dis, Q_yaw) |= (1 << Q_arc);
     // }
-
 
     // 64-line
     for (pcl::PointXYZ p : cloud.points)
@@ -263,12 +345,54 @@ cv::Mat LidarIris::circShift(const cv::Mat &src, int shift_m_rows, int shift_n_c
     return circColShift(circRowShift(src, shift_m_rows), shift_n_cols);
 }
 
-cv::Mat numpy_uint8_1c_to_cv_mat(py::array_t<uint8_t> &input) {
-    py::buffer_info buf = input.request();
-    int rows = buf.shape[0];
-    int cols = buf.shape[1];
-    cv::Mat mat(rows, cols, CV_8UC1, buf.ptr);
-    return mat.clone();
+std::pair<double, int>  OneCoupleCompare(string cloudFileName1, string cloudFileName2)
+{
+    LidarIris iris(4, 18, 1.6, 0.75, 50);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0(new pcl::PointCloud<pcl::PointXYZ>), cloud1(new pcl::PointCloud<pcl::PointXYZ>);
+    if (pcl::io::loadPCDFile(cloudFileName1, *cloud0) == -1)
+    {
+        abort();
+    }
+    if (pcl::io::loadPCDFile(cloudFileName2, *cloud1) == -1)
+    {
+        abort();
+    }
+    clock_t startTime = clock();
+
+    cv::Mat1b li1 = LidarIris::GetIris(*cloud0);
+    cv::Mat1b li2 = LidarIris::GetIris(*cloud1);
+
+    LidarIris::FeatureDesc fd1 = iris.GetFeature(li1);
+    LidarIris::FeatureDesc fd2 = iris.GetFeature(li2);
+
+    int bias;
+    auto dis = iris.Compare(fd1, fd2, &bias);
+
+    clock_t endTime = clock();
+
+    std::cout << "try compare:" << std::endl
+              << cloudFileName1 << std::endl
+              << cloudFileName2 << std::endl;
+    std::cout << "dis = " << dis << ", bias = " << bias << std::endl;
+    std::cout << "times = " << (endTime - startTime) / (double)CLOCKS_PER_SEC << "s."<< std::endl;
+
+    // cv::Mat1b img_iris, img_T;
+    // cv::vconcat(fd1.img, fd2.img, img_iris);
+    // cv::imshow("LiDAR Iris before transformation", img_iris);
+    // cv::imwrite("../img/before.bmp", img_iris);
+    
+    // cv::Mat temp = LidarIris::circShift(fd1.img, 0, bias);
+    // cv::vconcat(temp, fd2.img, img_iris);
+    // cv::imshow("LiDAR Iris after transformation", img_iris);
+    // cv::imwrite("../img/after.bmp", img_iris);
+
+    // cv::hconcat(fd1.T, fd2.T, img_T);
+    // cv::imshow("LiDAR Iris Template", img_T);
+    // cv::imwrite("../img/temp.bmp", img_T);
+
+    // cv::waitKey(0);
+
+    return std::make_pair(dis, bias);
 }
 
 PYBIND11_MODULE(lidar_iris, m) {
@@ -286,9 +410,10 @@ PYBIND11_MODULE(lidar_iris, m) {
             cv::Mat1b mat = numpy_uint8_1c_to_cv_mat(img);
             return self.GetFeature(mat);
         })        
-        // .def("get_feature", (LidarIris::FeatureDesc(LidarIris::*)(const cv::Mat1b&) const) &LidarIris::GetFeature)
-        // .def("get_feature", (LidarIris::FeatureDesc(LidarIris::*)(const cv::Mat1b&, std::vector<float>&) const) &LidarIris::GetFeature)
         .def_static("get_iris", &LidarIris::GetIris)
         .def("log_gabor_filter", &LidarIris::LogGaborFilter)
         .def("get_hamming_distance", &LidarIris::GetHammingDistance);
+        // .def("one_couple_compare", &LidarIris::OneCoupleCompare);
+    
+    m.def("one_couple_compare", &OneCoupleCompare);
 }
