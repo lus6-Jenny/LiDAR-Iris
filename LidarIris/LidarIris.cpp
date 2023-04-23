@@ -13,7 +13,7 @@
 
 namespace py = pybind11;
 
-pcl::PointCloud<pcl::PointXYZ>  array_to_pcl(py::array_t<float> array)
+pcl::PointCloud<pcl::PointXYZ> numpy_array_to_pcl(py::array_t<float> array)
 {
     // get the buffer info
     py::buffer_info buf = array.request();
@@ -33,8 +33,22 @@ pcl::PointCloud<pcl::PointXYZ>  array_to_pcl(py::array_t<float> array)
         cloud.points[i].y = ptr[i * 3 + 1];
         cloud.points[i].z = ptr[i * 3 + 2];
     }
-
     return cloud;
+}
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr bin_to_pcl(std::string cloudFileName)
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0(new pcl::PointCloud<pcl::PointXYZ>);
+    std::fstream input(cloudFileName, std::ios::in | std::ios::binary);
+    input.seekg(0, std::ios::beg);
+    for (int ii=0; input.good() && !input.eof(); ii++) {
+        pcl::PointXYZ point;
+        input.read((char *) &point.x, 3*sizeof(float));
+        float intensity;
+        input.read((char *) &intensity, sizeof(float));
+        cloud0->push_back(point);
+    }
+    return cloud0;
 }
 
 cv::Mat numpy_array_to_cv_mat(py::array_t<uint8_t> &arr) {
@@ -345,18 +359,25 @@ cv::Mat LidarIris::circShift(const cv::Mat &src, int shift_m_rows, int shift_n_c
     return circColShift(circRowShift(src, shift_m_rows), shift_n_cols);
 }
 
-std::pair<double, int>  OneCoupleCompare(string cloudFileName1, string cloudFileName2)
+std::pair<double, int>  OneCoupleCompare(std::string cloudFileName1, std::string cloudFileName2)
 {
     LidarIris iris(4, 18, 1.6, 0.75, 50);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0(new pcl::PointCloud<pcl::PointXYZ>), cloud1(new pcl::PointCloud<pcl::PointXYZ>);
-    if (pcl::io::loadPCDFile(cloudFileName1, *cloud0) == -1)
-    {
-        abort();
-    }
-    if (pcl::io::loadPCDFile(cloudFileName2, *cloud1) == -1)
-    {
-        abort();
-    }
+
+    // load bin file
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 = bin_to_pcl(cloudFileName1);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1 = bin_to_pcl(cloudFileName2); 
+    
+    // // load pcd file
+    // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0(new pcl::PointCloud<pcl::PointXYZ>), cloud1(new pcl::PointCloud<pcl::PointXYZ>);
+    // if (pcl::io::loadPCDFile(cloudFileName1, *cloud0) == -1)
+    // {
+    //     abort();
+    // }
+    // if (pcl::io::loadPCDFile(cloudFileName2, *cloud1) == -1)
+    // {
+    //     abort();
+    // }
+
     clock_t startTime = clock();
 
     cv::Mat1b li1 = LidarIris::GetIris(*cloud0);
@@ -370,9 +391,7 @@ std::pair<double, int>  OneCoupleCompare(string cloudFileName1, string cloudFile
 
     clock_t endTime = clock();
 
-    std::cout << "try compare:" << std::endl
-              << cloudFileName1 << std::endl
-              << cloudFileName2 << std::endl;
+
     std::cout << "dis = " << dis << ", bias = " << bias << std::endl;
     std::cout << "times = " << (endTime - startTime) / (double)CLOCKS_PER_SEC << "s."<< std::endl;
 

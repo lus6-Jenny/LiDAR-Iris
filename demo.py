@@ -74,8 +74,10 @@ from lidar_iris import LidarIris, one_couple_compare
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='LiDAR-Iris demo')
     parser.add_argument('--data_path', type=str, default='./data', help='path to the data folder')
-    parser.add_argument('--data_name1', type=str, default='64line_1.pcd', help='name of cloud 1')
-    parser.add_argument('--data_name2', type=str, default='64line_2.pcd', help='name of cloud 2')
+    # parser.add_argument('--data_name1', type=str, default='64line_1.pcd', help='name of cloud 1')
+    # parser.add_argument('--data_name2', type=str, default='64line_2.pcd', help='name of cloud 2')
+    parser.add_argument('--data_name1', type=str, default='32line_1.bin', help='name of cloud 1')
+    parser.add_argument('--data_name2', type=str, default='32line_2.bin', help='name of cloud 2')    
     args = parser.parse_args()
     
     # load the data
