@@ -86,6 +86,15 @@ if __name__ == '__main__':
 
     # process the data
     start_time = time.time()
+    # # load bin file
+    # cloud0 = np.fromfile(data_path1, dtype=np.float32)
+    # cloud0 = np.reshape(cloud0, (cloud0.shape[0]//4,4))
+    # cloud0 = cloud0[:,:3]
+    # cloud1 = np.fromfile(data_path1, dtype=np.float32)
+    # cloud1 = np.reshape(cloud1, (cloud1.shape[0]//4,4))
+    # cloud1 = cloud1[:,:3]
+    # print(cloud0.shape, cloud0)
+    # dis, bias = one_couple_compare(cloud0, cloud1)
     dis, bias = one_couple_compare(data_path1, data_path2)
     end_time = time.time()
     print('description: dis = %.3f, bias = %d' % (dis, bias))
