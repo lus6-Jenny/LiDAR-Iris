@@ -15,8 +15,6 @@ find_package(Eigen REQUIRED)
 find_package(PythonInterp 3)
 find_package(PythonLibs 3)
 find_package(pybind11 REQUIRED)
-# find_package(PkgConfig REQUIRED)
-# pkg_check_modules(LIBFFI REQUIRED IMPORTED_TARGET libffi)
 
 set(pybind11_INCLUDE_DIR "/home/lusha/miniconda3/envs/pytorch/lib/python3.7/site-packages/pybind11/include")
 
@@ -31,7 +29,6 @@ set(SOURCE_FILES
 
 add_library(LidarIris SHARED ${SOURCE_FILES})
 target_include_directories(LidarIris PRIVATE ${Python_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS})
-# target_link_libraries(LidarIris PRIVATE ${Python_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS} PkgConfig::LIBFFI)
 target_link_libraries(LidarIris PRIVATE ${Python_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS} ${Eigen_INCLUDE_DIRS})
 
 pybind11_add_module(lidar_iris ${SOURCE_FILES})

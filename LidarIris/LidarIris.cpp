@@ -99,14 +99,6 @@ cv::Mat numpy_array_to_cv_mat(py::array_t<uint8_t> &arr) {
     return img;
 }
 
-cv::Mat numpy_uint8_1c_to_cv_mat(py::array_t<uint8_t> &input) {
-    py::buffer_info buf = input.request();
-    int rows = buf.shape[0];
-    int cols = buf.shape[1];
-    cv::Mat mat(rows, cols, CV_8UC1, buf.ptr);
-    return mat.clone();
-}
-
 py::array_t<uint8_t> cv_mat_to_numpy_array(const cv::Mat &img) {
     int rows = img.rows;
     int cols = img.cols;
@@ -121,118 +113,83 @@ py::array_t<uint8_t> cv_mat_to_numpy_array(const cv::Mat &img) {
     return arr;
 }
 
-// cv::Mat1b LidarIris::GetIris(float* cloud_data, int cloud_size, int cloud_dim)
-// {
-//     cv::Mat1b IrisMap = cv::Mat1b::zeros(80, 360);
-    
-//     // 64-line
-//     for (int i = 0; i < cloud_size; i++) {
-//         float dis = sqrt(cloud_data[i * cloud_dim + 0] * cloud_data[i * cloud_dim + 0] + cloud_data[i * cloud_dim + 1] * cloud_data[i * cloud_dim + 1]);
-//         float arc = (atan2(cloud_data[i * cloud_dim + 2], dis) * 180.0f / M_PI) + 24;
-//         float yaw = (atan2(cloud_data[i * cloud_dim + 1], cloud_data[i * cloud_dim + 0]) * 180.0f / M_PI) + 180;
-//         int Q_dis = std::min(std::max((int)floor(dis), 0), 79);
-//         int Q_arc = std::min(std::max((int)floor(arc / 4.0f), 0), 7);
-//         int Q_yaw = std::min(std::max((int)floor(yaw + 0.5), 0), 359);
-//         IrisMap.at<uint8_t>(Q_dis, Q_yaw) |= (1 << Q_arc);
-//     }
-//     return IrisMap;
-// }
-
 cv::Mat1b LidarIris::GetIris(const pcl::PointCloud<pcl::PointXYZ> &cloud)
 {
     cv::Mat1b IrisMap = cv::Mat1b::zeros(80, 360);
 
-    // 16-line
-    // for (pcl::PointXYZ p : cloud.points)
-    // {
-    //     float dis = sqrt(p.data[0] * p.data[0] + p.data[1] * p.data[1]);
-    //     float arc = (atan2(p.data[2], dis) * 180.0f / M_PI) + 15;
-    //     float yaw = (atan2(p.data[1], p.data[0]) * 180.0f / M_PI) + 180;
-    //     int Q_dis = std::min(std::max((int)floor(dis), 0), 79);
-    //     int Q_arc = std::min(std::max((int)floor(arc / 4.0f), 0), 7);
-    //     int Q_yaw = std::min(std::max((int)floor(yaw + 0.5), 0), 359);
-    //     IrisMap.at<uint8_t>(Q_dis, Q_yaw) |= (1 << Q_arc);
-    // }
-
-    // 64-line
     for (pcl::PointXYZ p : cloud.points)
     {
         float dis = sqrt(p.data[0] * p.data[0] + p.data[1] * p.data[1]);
-        float arc = (atan2(p.data[2], dis) * 180.0f / M_PI) + 24;
         float yaw = (atan2(p.data[1], p.data[0]) * 180.0f / M_PI) + 180;
         int Q_dis = std::min(std::max((int)floor(dis), 0), 79);
-        int Q_arc = std::min(std::max((int)floor(arc / 4.0f), 0), 7);
+        int Q_arc = std::min(std::max((int)ceil(p.z + 5), 0), 7);
         int Q_yaw = std::min(std::max((int)floor(yaw + 0.5), 0), 359);
         IrisMap.at<uint8_t>(Q_dis, Q_yaw) |= (1 << Q_arc);
     }
+
     return IrisMap;
 }
 
-void LidarIris::UpdateFrame(const cv::Mat1b &frame, int frameIndex, float *matchDistance, int *matchIndex)
-{
-    // first: calc feature
-    std::vector<float> vec;
-    auto feature = GetFeature(frame, vec);
-    flann::Matrix<float> queries(vec.data(), 1, vec.size());
-    if (featureList.size() == 0)
-    {
-        if (matchDistance)
-            *matchDistance = NAN;
-        if (matchIndex)
-            *matchIndex = -1;
-        vecList.buildIndex(queries);
-    }
-    else
-    {
-        // second: search in database
-        vecList.knnSearch(queries, indices, dists, _matchNum, flann::SearchParams(32));
-        //thrid: calc matches
-        std::vector<float> dis(_matchNum);
-        for (int i = 0; i < _matchNum; i++)
-        {
-            dis[i] = Compare(feature, featureList[indices[0][i]]);
-        }
-        int minIndex = std::min_element(dis.begin(), dis.end()) - dis.begin();
-        if (matchDistance)
-            *matchDistance = dis[minIndex];
-        if (matchIndex)
-            *matchIndex = frameIndexList[indices[0][minIndex]];
-        // forth: add frame to database
-        vecList.addPoints(queries);
-    }
-    featureList.push_back(feature);
-    frameIndexList.push_back(frameIndex);
-}
 
 float LidarIris::Compare(const LidarIris::FeatureDesc &img1, const LidarIris::FeatureDesc &img2, int *bias)
 {
-    auto firstRect = FFTMatch(img2.img, img1.img);
-    int firstShift = firstRect.center.x - img1.img.cols / 2;
-    float dis1;
-    int bias1;
-    GetHammingDistance(img1.T, img1.M, img2.T, img2.M, firstShift, dis1, bias1);
-    //
-    auto T2x = circShift(img2.T, 0, 180);
-    auto M2x = circShift(img2.M, 0, 180);
-    auto img2x = circShift(img2.img, 0, 180);
-    //
-    auto secondRect = FFTMatch(img2x, img1.img);
-    int secondShift = secondRect.center.x - img1.img.cols / 2;
-    float dis2 = 0;
-    int bias2 = 0;
-    GetHammingDistance(img1.T, img1.M, T2x, M2x, secondShift, dis2, bias2);
-    //
-    if (dis1 < dis2)
+    if(_matchNum==2) //正向反向都有
     {
-        if (bias)
-            *bias = bias1;
-        return dis1;
+        auto firstRect = FFTMatch(img2.img, img1.img);
+        int firstShift = firstRect.center.x - img1.img.cols / 2;
+        float dis1;
+        int bias1;
+        GetHammingDistance(img1.T, img1.M, img2.T, img2.M, firstShift, dis1, bias1);
+        
+        auto T2x = circShift(img2.T, 0, 180);
+        auto M2x = circShift(img2.M, 0, 180);
+        auto img2x = circShift(img2.img, 0, 180);
+        
+        auto secondRect = FFTMatch(img2x, img1.img);
+        int secondShift = secondRect.center.x - img1.img.cols / 2;
+        float dis2 = 0;
+        int bias2 = 0;
+        GetHammingDistance(img1.T, img1.M, T2x, M2x, secondShift, dis2, bias2);
+        
+        if (dis1 < dis2)
+        {
+            if (bias)
+                *bias = bias1;
+            return dis1;
+        }
+        else
+        {
+            if (bias)
+                *bias = (bias2 + 180) % 360;
+            return dis2;
+        }
     }
-    else
+    if(_matchNum==1)//只有反向
     {
+        auto T2x = circShift(img2.T, 0, 180);
+        auto M2x = circShift(img2.M, 0, 180);
+        auto img2x = circShift(img2.img, 0, 180);
+
+        auto secondRect = FFTMatch(img2x, img1.img);
+        int secondShift = secondRect.center.x - img1.img.cols / 2;
+        float dis2 = 0;
+        int bias2 = 0;
+        GetHammingDistance(img1.T, img1.M, T2x, M2x, secondShift, dis2, bias2);
         if (bias)
             *bias = (bias2 + 180) % 360;
         return dis2;
+    }
+    if(_matchNum==0)
+    {
+        auto firstRect = FFTMatch(img2.img, img1.img);
+        int firstShift = firstRect.center.x - img1.img.cols / 2;
+        float dis1;
+        int bias1;
+        GetHammingDistance(img1.T, img1.M, img2.T, img2.M, firstShift, dis1, bias1);
+        if (bias)
+            *bias = bias1;
+        return dis1;
+
     }
 }
 
@@ -316,15 +273,6 @@ LidarIris::FeatureDesc LidarIris::GetFeature(const cv::Mat1b &src)
     return desc;
 }
 
-LidarIris::FeatureDesc LidarIris::GetFeature(const cv::Mat1b &src, std::vector<float> &vec)
-{
-    cv::Mat1f temp;
-    src.convertTo(temp, CV_32FC1);
-    cv::reduce((temp != 0) / 255, temp, 1, cv::REDUCE_AVG);
-    vec = temp.isContinuous() ? temp : temp.clone();
-    return GetFeature(src);
-}
-
 void LidarIris::GetHammingDistance(const cv::Mat1b &T1, const cv::Mat1b &M1, const cv::Mat1b &T2, const cv::Mat1b &M2, int scale, float &dis, int &bias)
 {
     dis = NAN;
@@ -394,9 +342,8 @@ cv::Mat LidarIris::circShift(const cv::Mat &src, int shift_m_rows, int shift_n_c
 }
 
 std::pair<double, int> OneCoupleCompare(std::string cloudFileName1, std::string cloudFileName2)
-// std::pair<double, int> OneCoupleCompare(py::array_t<float> &arr1, py::array_t<float> &arr2)
 {
-    LidarIris iris(4, 18, 1.6, 0.75, 50);
+    LidarIris iris(4, 18, 1.6, 0.75, 0);
     
     // // convert numpy array to pcl
     // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 = numpy_array_to_pcl(arr1);
@@ -425,14 +372,13 @@ std::pair<double, int> OneCoupleCompare(std::string cloudFileName1, std::string 
     LidarIris::FeatureDesc fd1 = iris.GetFeature(li1);
     LidarIris::FeatureDesc fd2 = iris.GetFeature(li2);
 
+    clock_t endTime = clock();
+
     int bias;
     auto dis = iris.Compare(fd1, fd2, &bias);
 
-    clock_t endTime = clock();
-
-
-    std::cout << "dis = " << dis << ", bias = " << bias << std::endl;
-    std::cout << "times = " << (endTime - startTime) / (double)CLOCKS_PER_SEC << "s."<< std::endl;
+    // std::cout << "dis = " << dis << ", bias = " << bias << std::endl;
+    // std::cout << "times = " << (endTime - startTime) / (double)CLOCKS_PER_SEC << "s."<< std::endl;
 
     // cv::Mat1b img_iris, img_T;
     // cv::vconcat(fd1.img, fd2.img, img_iris);
@@ -454,23 +400,6 @@ std::pair<double, int> OneCoupleCompare(std::string cloudFileName1, std::string 
 }
 
 PYBIND11_MODULE(lidar_iris, m) {
-    py::class_<LidarIris::FeatureDesc>(m, "FeatureDesc")
-        .def(py::init<>())
-        .def_readwrite("img", &LidarIris::FeatureDesc::img)
-        .def_readwrite("T", &LidarIris::FeatureDesc::T)
-        .def_readwrite("M", &LidarIris::FeatureDesc::M);
-
-    py::class_<LidarIris>(m, "LidarIris")
-        .def(py::init<int, int, float, float, int>())
-        .def("update_frame", &LidarIris::UpdateFrame)
-        .def("compare", &LidarIris::Compare)
-        .def("get_feature", [](LidarIris& self, py::array_t<uint8_t>& img) {
-            cv::Mat1b mat = numpy_uint8_1c_to_cv_mat(img);
-            return self.GetFeature(mat);
-        })        
-        .def_static("get_iris", &LidarIris::GetIris)
-        .def("log_gabor_filter", &LidarIris::LogGaborFilter)
-        .def("get_hamming_distance", &LidarIris::GetHammingDistance);
-    
+    m.doc() = "pybind11 lidar_iris plugin";
     m.def("one_couple_compare", &OneCoupleCompare);
 }

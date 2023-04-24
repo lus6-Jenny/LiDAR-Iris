@@ -11,15 +11,14 @@ using namespace std;
 // number of sequence
 const int N = 2761;
 
-// nclt sequence
-const string seq = "2012-02-14";
+// kitti sequence
+const string seq = "05";
 
 /*0 for kitti "00","05" only same direction loops;
 1 for kitti "08" only reverse loops; 
 2 for both same and reverse loops*/
 const int loop_event = 0;
 
-// get ground truth from csv pose file
 std::vector<vector<int>> getGTFromPose(const string& pose_path)
 {
     std::ifstream pose_ifs(pose_path);
@@ -81,8 +80,8 @@ std::vector<vector<int>> getGTFromPose(const string& pose_path)
 int main(int argc, char *argv[])
 {
 
-    //nclt pose xx.csv
-    auto gt = getGTFromPose("/home/lusha/Datasets/NCLT/ground_truth/groundtruth_" + seq + "/" +".csv");
+    //kitti pose xx.txt
+    auto gt = getGTFromPose("/media/yingwang/Document/" +seq + "/"+seq +".txt");
     std::ofstream ofs("../test_res" + seq+".txt");
 
     LidarIris iris(4, 18, 1.6, 0.75, loop_event);
@@ -93,8 +92,8 @@ int main(int argc, char *argv[])
         ss << setw(6) << setfill('0') << i;
         cout << ss.str()+".bin" << std::endl;
 
-        // nclt velodyne bins
-        std::string filename = "/home/lusha/Datasets/NCLT/" + seq + "/velodyne_data/velodyne_sync/" + ss.str() + ".bin";
+        // kitti velodyne bins
+        std::string filename = "/media/yingwang/Document/" + seq + "/velodyne/" + ss.str() + ".bin";
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0(new pcl::PointCloud<pcl::PointXYZ>);
         std::fstream input(filename, std::ios::in | std::ios::binary);
         input.seekg(0, std::ios::beg);
