@@ -1,7 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
-#include <Eigen/Core>
 
 #include "LidarIris.h"
 #include "fftm/fftm.hpp"
@@ -13,48 +12,6 @@
 #include <pcl/io/pcd_io.h>
 
 namespace py = pybind11;
-
-// pcl::PointCloud<pcl::PointXYZ>::Ptr numpy_array_to_pcl(py::array_t<float> &arr)
-// {
-//     auto buf = arr.request();
-//     if (buf.ndim != 2 || buf.shape[1] != 3) {
-//         throw std::runtime_error("Input array must be 2D with shape (n,3)");
-//     }
-
-//     auto ptr = static_cast<float *>(buf.ptr);
-//     int n_points = buf.shape[0];
-
-//     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-//     cloud->reserve(n_points);
-
-//     for (int i = 0; i < n_points; ++i) {
-//         float x = ptr[i*3];
-//         float y = ptr[i*3+1];
-//         float z = ptr[i*3+2];
-//         std::cout << "x = " << x << "y = " << y << "z = " << z << std::endl;
-
-//         cloud->push_back(pcl::PointXYZ(x, y, z));
-//     }
-//     return cloud;
-// }
-
-// pcl::PointCloud<pcl::PointXYZ>::Ptr numpy_array_to_pcl(pybind11::array_t<float> &arr) {
-//     // Get a pointer to the contiguous array data.
-//     auto points = arr.unchecked<2>();  // assume shape (N, 3)
-//     int num_points = arr.shape(0);
-//     std::cout << num_points << std::endl;
-
-//     // Create a new PCL point cloud
-//     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
-
-//     // Copy the points from the numpy array into the PCL point cloud
-//     for (size_t i = 0; i < num_points; i++) {
-//         Eigen::Vector3f point(points(i, 0), points(i, 1), points(i, 2));
-//         pcl::PointXYZ pcl_point(point(0), point(1), point(2));
-//         cloud->push_back(pcl_point);
-//     }
-//     return cloud;
-// }
 
 // convert numpy array to pcl point cloud
 pcl::PointCloud<pcl::PointXYZ>::Ptr numpy_array_to_pcl(py::array_t<float> &arr)
@@ -341,17 +298,18 @@ cv::Mat LidarIris::circShift(const cv::Mat &src, int shift_m_rows, int shift_n_c
     return circColShift(circRowShift(src, shift_m_rows), shift_n_cols);
 }
 
-std::pair<double, int> OneCoupleCompare(std::string cloudFileName1, std::string cloudFileName2)
+// std::pair<double, int> OneCoupleCompare(std::string cloudFileName1, std::string cloudFileName2)
+std::pair<double, int> OneCoupleCompare(py::array_t<float> &arr1, py::array_t<float> &arr2)
 {
     LidarIris iris(4, 18, 1.6, 0.75, 0);
     
-    // // convert numpy array to pcl
-    // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 = numpy_array_to_pcl(arr1);
-    // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1 = numpy_array_to_pcl(arr2);
+    // convert numpy array to pcl
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 = numpy_array_to_pcl(arr1);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1 = numpy_array_to_pcl(arr2);
 
-    // load bin file
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 = bin_to_pcl(cloudFileName1);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1 = bin_to_pcl(cloudFileName2); 
+    // // load bin file
+    // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 = bin_to_pcl(cloudFileName1);
+    // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1 = bin_to_pcl(cloudFileName2); 
     
     // // load pcd file
     // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0(new pcl::PointCloud<pcl::PointXYZ>), cloud1(new pcl::PointCloud<pcl::PointXYZ>);

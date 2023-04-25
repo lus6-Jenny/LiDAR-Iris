@@ -2,3 +2,4 @@ build/
 vscode/
 dist/
 __pycache__/
+*.egg-info/
