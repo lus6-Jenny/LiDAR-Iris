@@ -1,8 +1,0 @@
-LICENSE
-README.md
-setup.py
-lidar_iris.egg-info/PKG-INFO
-lidar_iris.egg-info/SOURCES.txt
-lidar_iris.egg-info/dependency_links.txt
-lidar_iris.egg-info/not-zip-safe
-lidar_iris.egg-info/top_level.txt
